@@ -10,6 +10,11 @@ export type RegisterRequest = {
   password: string;
 };
 
+export type CreatePostRequest = {
+  image: string;
+  caption?: string;
+};
+
 // Vad en inloggad användare får ha tillgång till
 export type User = {
   username: string;
@@ -33,4 +38,9 @@ export type User = {
 export type LoginRequest = {
   username: string;
   password: string;
+};
+
+export type AuthResponse = {
+  token: string;
+  user: User;
 };

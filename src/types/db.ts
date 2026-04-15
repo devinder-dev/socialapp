@@ -12,3 +12,12 @@ export type UserRow = {
   created_at: Date;
   updated_at: Date | null;
 };
+
+export type PostRow = {
+  id: number;
+  status: "active" | "hidden" | "deleted";
+  user_id: number;
+  image: string;
+  caption: string | null;
+  created_at: Date;
+};
