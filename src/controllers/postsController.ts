@@ -18,3 +18,13 @@ export async function createPost(
 
   return reply.status(201).send(createdPost);
 }
+
+/*
+
+Att göra:
+
+Slutför kopplingen mellan createPost och Amazon S3.
+
+Så att man kan anropa POST /create och ladda upp en bild och spara länken i databasen. 
+
+*/
