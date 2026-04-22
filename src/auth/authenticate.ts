@@ -1,6 +1,12 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { TokenPayload } from "../types/auth";
 
+// Dekorering gör det möjligt för oss att lägga in funktioner och objekt
+// i Fastify's request, reply eller FastifyInstance.
+
+// Då kan man komma åt det man lagt in direkt via requesten/reply/FastifyInstance
+// istället för att importera det.
+
 // Middleware for Admins
 async function authenticate(request: FastifyRequest, reply: FastifyReply) {
   //

@@ -10,36 +10,38 @@ export async function createPost(
 ) {
   const tokenPayload = request.user as TokenPayload;
 
-  const file = await request.file();
+  const multipartData = await request.file();
 
-  if (!file) {
+  if (!multipartData) {
     return reply.status(400).send({ message: "Image is required" });
   }
 
   // Accepterade filtyper
   const allowedMimeTypes = ["image/jpeg", "image/png"];
 
-  if (!allowedMimeTypes.includes(file.mimetype)) {
+  if (!allowedMimeTypes.includes(multipartData.mimetype)) {
     return reply
       .status(400)
       .send({ message: "Only JPEG and PNG images are allowed" });
   }
 
   // Tar upp lite minne
-  const buffer = await file?.toBuffer();
+  const buffer = await multipartData?.toBuffer();
 
   const uploadedUrl = await uploadImageToS3(
     buffer,
-    file.filename,
-    file.mimetype,
+    multipartData.filename,
+    multipartData.mimetype,
   );
 
   if (!uploadedUrl) {
     return reply.status(500).send({ message: "Failed to upload image" });
   }
 
+  const caption = multipartData.fields?.caption?.value as string | undefined;
+
   const createdPost = await repository.posts.insertOne(
-    request.body.caption,
+    caption,
     uploadedUrl,
     tokenPayload.username,
   );
