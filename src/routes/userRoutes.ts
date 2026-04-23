@@ -33,9 +33,9 @@ export async function userRoutes(
   });
 
   httpServer.route({
-    method: "GET",
-    url: "/test",
-    handler: (req, rep) => rep.status(200).send("Hello there!"),
+    method: "POST",
+    url: "/toggle-follow/:username",
+    handler: userControllers.toggleFollow,
     preHandler: [authenticate],
   });
 }

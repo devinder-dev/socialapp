@@ -22,3 +22,33 @@ export async function getByUsername(username: string) {
 
   return user || null;
 }
+
+// En repository-metod som tar emot två användarnamn och kollar om den ena följer den andra.
+
+export async function isFollowing(
+  followingUsername: string, // Den som följer
+  followedUsername: string, // Den som blir följd
+): Promise<boolean> {
+  const [relation] = await db`
+    SELECT * FROM follower_relationships
+    WHERE following_user_id = (SELECT id from users WHERE username = ${followingUsername}) AND followed_user_id = (SELECT id from users WHERE username = ${followedUsername})
+  `;
+
+  return !!relation; // Om relation finns så returnera true, annars false
+}
+
+export async function addFollower(
+  followingUsername: string,
+  followedUsername: string,
+) {
+  const createdAt = new Date().toISOString();
+
+  await db`INSERT INTO follower_relationships (following_user_id, followed_user_id, created_at) VALUES ((SELECT id FROM users WHERE username = ${followingUsername}), (SELECT id FROM users WHERE username = ${followedUsername}), ${createdAt})`;
+}
+
+export async function removeFollower(
+  followingUsername: string,
+  followedUsername: string,
+) {
+  await db`DELETE FROM follower_relationships WHERE following_user_id = (SELECT id from users WHERE username = ${followingUsername}) AND followed_user_id = (SELECT id from users WHERE username = ${followedUsername})`;
+}

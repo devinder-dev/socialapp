@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
                        updated_at TIMESTAMPTZ
 );
 
+--- Samma värde på dessa två kolumner kan ej förekomma mer än en gång i tabellen.
+--- Detta gör att en användare inte kan följa samma person mer än en gång.
+
 CREATE TABLE IF NOT EXISTS follower_relationships (
                                         following_user_id INTEGER NOT NULL REFERENCES users(id),
                                         followed_user_id INTEGER NOT NULL REFERENCES users(id),
