@@ -31,3 +31,12 @@ export type FeedRow = {
   profile_image: string | null;
   user_display_name: string;
 };
+
+export type DiscoverUserRow = {
+  username: string;
+  display_name: string | null;
+  profile_image: string | null;
+  bio: string | null;
+  visibility: "private" | "public";
+  is_following: boolean;
+};

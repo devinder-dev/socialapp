@@ -82,6 +82,15 @@ export async function toggleFollow(
   }
 }
 
+export async function getUsers(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { username } = request.user;
+  const users = await repository.users.getAllExcept(username);
+  return reply.status(200).send(users);
+}
+
 export async function login(
   request: FastifyRequest<{ Body: LoginRequest }>,
   reply: FastifyReply,

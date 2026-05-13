@@ -1,0 +1,6 @@
+node_modules
+frontend_backup
+frontend_backup.ts
+.env
+.git
+*.log

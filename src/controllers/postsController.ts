@@ -4,6 +4,15 @@ import type { CreatePostRequest } from "../types/http";
 import type { TokenPayload } from "../types/auth";
 import uploadImageToS3 from "../adapters/s3";
 
+export async function getFeed(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { username } = request.user as TokenPayload;
+  const posts = await repository.posts.getFeedForUser(username);
+  return reply.status(200).send(posts);
+}
+
 export async function createPost(
   request: FastifyRequest<{ Body: CreatePostRequest }>,
   reply: FastifyReply,

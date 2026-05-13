@@ -38,6 +38,13 @@ export async function userRoutes(
     handler: userControllers.toggleFollow,
     preHandler: [authenticate],
   });
+
+  httpServer.route({
+    method: "GET",
+    url: "/users",
+    handler: userControllers.getUsers,
+    preHandler: [authenticate],
+  });
 }
 
 export default userRoutes;

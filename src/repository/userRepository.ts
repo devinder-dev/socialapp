@@ -1,4 +1,3 @@
-import { password } from "bun";
 import { db } from "../db/client";
 import type { RegisterRequest } from "../types/http";
 import type { UserRow } from "../types/db";
@@ -51,4 +50,25 @@ export async function removeFollower(
   followedUsername: string,
 ) {
   await db`DELETE FROM follower_relationships WHERE following_user_id = (SELECT id from users WHERE username = ${followingUsername}) AND followed_user_id = (SELECT id from users WHERE username = ${followedUsername})`;
+}
+
+export async function getAllExcept(currentUsername: string) {
+  const users = await db`
+    SELECT
+      u.username,
+      u.display_name,
+      u.profile_image,
+      u.bio,
+      u.visibility,
+      EXISTS(
+        SELECT 1 FROM follower_relationships fr
+        WHERE fr.following_user_id = (SELECT id FROM users WHERE username = ${currentUsername})
+        AND fr.followed_user_id = u.id
+      ) AS is_following
+    FROM users u
+    WHERE u.username != ${currentUsername}
+    ORDER BY u.created_at DESC
+    LIMIT 50
+  `;
+  return users;
 }
