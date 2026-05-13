@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    username TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE,
     visibility TEXT NOT NULL CHECK (visibility IN ('private', 'public')),
     profile_image TEXT,
     bio TEXT,
     display_name TEXT NOT NULL,
-    email TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
     phone TEXT NOT NULL,
     birthdate TIMESTAMPTZ NOT NULL,
     password TEXT NOT NULL,

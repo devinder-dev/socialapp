@@ -1,23 +1,22 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
-const S3_REGION = process.env.S3_REGION;
-const S3_BUCKET = process.env.S3_BUCKET;
-const S3_ACCESS_KEY = process.env.S3_ACCESS_KEY;
-const S3_SECRET_KEY = process.env.S3_SECRET_KEY;
+let s3Client: S3Client | null = null;
 
-if (!S3_REGION) throw new Error("Missing S3_REGION");
-if (!S3_BUCKET) throw new Error("Missing S3_BUCKET");
-if (!S3_ACCESS_KEY) throw new Error("Missing S3_ACCESS_KEY");
-if (!S3_SECRET_KEY) throw new Error("Missing S3_SECRET_KEY");
+function getS3Client(): S3Client {
+  if (s3Client) return s3Client;
 
-const s3Client = new S3Client({
-  region: S3_REGION,
-  credentials: {
-    accessKeyId: S3_ACCESS_KEY,
-    secretAccessKey: S3_SECRET_KEY,
-  },
-});
+  const region = process.env.S3_REGION;
+  const accessKeyId = process.env.S3_ACCESS_KEY;
+  const secretAccessKey = process.env.S3_SECRET_KEY;
+
+  if (!region) throw new Error("Missing S3_REGION");
+  if (!accessKeyId) throw new Error("Missing S3_ACCESS_KEY");
+  if (!secretAccessKey) throw new Error("Missing S3_SECRET_KEY");
+
+  s3Client = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
+  return s3Client;
+}
 
 /*
 
@@ -42,40 +41,27 @@ compressed
 
 async function uploadImageToS3(
   imageBuffer: Buffer,
-  fullFileName: string, // minbild.jpg
+  fullFileName: string,
   contentType: string,
 ) {
-  // Byter filnamn
-  const timestamp = Date.now(); // 10291204312
+  const bucket = process.env.S3_BUCKET;
+  if (!bucket) throw new Error("Missing S3_BUCKET");
 
-  const partitionedFileName = fullFileName.split("."); // ['minbild', 'jpg']
+  const lastDot = fullFileName.lastIndexOf(".");
+  const fileExtension = lastDot !== -1 ? fullFileName.slice(lastDot + 1) : "jpg";
+  const uniqueName = `${crypto.randomUUID()}.${fileExtension}`;
 
-  const fileName = partitionedFileName[0]; // 'minbild'
-  const fileExtension = partitionedFileName.pop();
-
-  const finalFileName = `${timestamp}-${fileName}`;
-
-  // Med hjälp av bibliotek kan vi komprimera bilden och skapa en ny kopia av den som är komprimerad
-
-  // const compressedImage = await compressImage(imageBuffer)
-
-  // const thumbnail = await getThumbnail(imageBuffer)
-
-  // Konfigurerar uppladdning
   const upload = new Upload({
-    client: s3Client,
+    client: getS3Client(),
     params: {
-      Bucket: S3_BUCKET,
-      Key: `${finalFileName}.${fileExtension}`, // 10202919831341-minbild.jpg
+      Bucket: bucket,
+      Key: uniqueName,
       Body: imageBuffer,
       ContentType: contentType,
     },
   });
 
-  // Laddar vi upp
   const result = await upload.done();
-
-  // Returnerar vi länken till bilden.
   return result.Location;
 }
 

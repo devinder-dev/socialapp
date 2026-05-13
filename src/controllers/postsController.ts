@@ -34,8 +34,7 @@ export async function createPost(
       .send({ message: "Only JPEG and PNG images are allowed" });
   }
 
-  // Tar upp lite minne
-  const buffer = await multipartData?.toBuffer();
+  const buffer = await multipartData.toBuffer();
 
   const uploadedUrl = await uploadImageToS3(
     buffer,
@@ -47,7 +46,11 @@ export async function createPost(
     return reply.status(500).send({ message: "Failed to upload image" });
   }
 
-  const caption = multipartData.fields?.caption?.value;
+  const captionField = multipartData.fields?.caption;
+  const caption =
+    captionField && !Array.isArray(captionField) && "value" in captionField
+      ? (captionField.value as string)
+      : undefined;
 
   const createdPost = await repository.posts.insertOne(
     caption,
@@ -57,14 +60,3 @@ export async function createPost(
 
   return reply.status(201).send(createdPost);
 }
-
-export async function getFeed(request: FastifyRequest, reply: FastifyReply) {
-  // Plocka ut den inloggade användarens username från JWT:n (finns i request.user)
-  const username = request.user.username;
-
-  const feed = await repository.posts.getFeedForUser(username);
-
-  return reply.status(200).send(feed);
-}
-
-// http://10.100.2.55:3000

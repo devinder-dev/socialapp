@@ -28,7 +28,7 @@ async function generateAuthResponse(
   };
 
   const token = await reply.jwtSign(tokenPayload, {
-    expiresIn: "100y",
+    expiresIn: "7d",
   });
 
   return {
@@ -41,7 +41,11 @@ export async function register(
   request: FastifyRequest<{ Body: RegisterRequest }>,
   reply: FastifyReply,
 ) {
-  const user = await repository.users.insertOne(request.body);
+  const hashedPassword = await Bun.password.hash(request.body.password);
+  const user = await repository.users.insertOne({
+    ...request.body,
+    password: hashedPassword,
+  });
 
   const response = await generateAuthResponse(user, reply);
 
@@ -59,6 +63,9 @@ export async function toggleFollow(
 
   // 2. Hämta ut den användare som vi vill följa/avfölja (finns i request.params.username)
   const usernameToFollow = request.params.username;
+
+  if (usernameLoggedIn === usernameToFollow)
+    return reply.status(400).send({ message: "You cannot follow yourself" });
 
   // 3. Kolla om den inloggade användaren redan följer den andra användaren
 
@@ -100,7 +107,11 @@ export async function login(
   // if (!foundUser) throw new NotFound("User not found!")
   if (!foundUser) return reply.status(404).send({ message: "User not found!" });
 
-  if (foundUser.password !== request.body.password)
+  const passwordMatch = await Bun.password.verify(
+    request.body.password,
+    foundUser.password,
+  );
+  if (!passwordMatch)
     return reply.status(401).send({ message: "Incorrect password!" });
 
   const response = await generateAuthResponse(foundUser, reply);

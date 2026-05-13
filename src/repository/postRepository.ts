@@ -13,7 +13,7 @@ export async function insertOne(
     PostRow[]
   >`INSERT INTO posts (status, user_id, image, caption, created_at) VALUES (${status}, (SELECT id FROM users WHERE username = ${username}), ${image}, ${caption}, ${createdAt}) RETURNING *`;
 
-  if (!created) throw new Error("Failed to create user!");
+  if (!created) throw new Error("Failed to create post!");
 
   return created;
 }
