@@ -40,3 +40,21 @@ export type DiscoverUserRow = {
   visibility: "private" | "public";
   is_following: boolean;
 };
+
+export type ReactionRow = {
+  user_id: number;
+  post_id: number;
+  reaction_type: string;
+  created_at: Date;
+};
+
+export type CommentRow = {
+  id: number;
+  status: "active" | "deleted";
+  user_id: number;
+  post_id: number;
+  parent_comment_id: number | null;
+  text: string;
+  created_at: Date;
+  username: string;
+};

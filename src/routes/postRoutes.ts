@@ -1,5 +1,7 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import * as postsController from "../controllers/postsController";
+import * as reactionsController from "../controllers/reactionsController";
+import * as commentsController from "../controllers/commentsController";
 import authenticate from "../auth/authenticate";
 
 async function postRoutes(
@@ -17,6 +19,41 @@ async function postRoutes(
     method: "GET",
     url: "/feed",
     handler: postsController.getFeed,
+    preHandler: [authenticate],
+  });
+
+  httpServer.route({
+    method: "DELETE",
+    url: "/posts/:id",
+    handler: postsController.deletePost,
+    preHandler: [authenticate],
+  });
+
+  httpServer.route({
+    method: "POST",
+    url: "/posts/:id/like",
+    handler: reactionsController.toggleLike,
+    preHandler: [authenticate],
+  });
+
+  httpServer.route({
+    method: "GET",
+    url: "/posts/:id/likes",
+    handler: reactionsController.getLikes,
+    preHandler: [authenticate],
+  });
+
+  httpServer.route({
+    method: "POST",
+    url: "/posts/:id/comments",
+    handler: commentsController.addComment,
+    preHandler: [authenticate],
+  });
+
+  httpServer.route({
+    method: "GET",
+    url: "/posts/:id/comments",
+    handler: commentsController.getComments,
     preHandler: [authenticate],
   });
 }

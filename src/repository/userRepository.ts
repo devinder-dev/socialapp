@@ -52,7 +52,7 @@ export async function removeFollower(
   await db`DELETE FROM follower_relationships WHERE following_user_id = (SELECT id from users WHERE username = ${followingUsername}) AND followed_user_id = (SELECT id from users WHERE username = ${followedUsername})`;
 }
 
-export async function getAllExcept(currentUsername: string) {
+export async function getAllExcept(currentUsername: string, search?: string) {
   const users = await db`
     SELECT
       u.username,
@@ -67,8 +67,27 @@ export async function getAllExcept(currentUsername: string) {
       ) AS is_following
     FROM users u
     WHERE u.username != ${currentUsername}
+      AND (
+        ${search ? db`(u.username ILIKE ${"%" + search + "%"} OR u.display_name ILIKE ${"%" + search + "%"})` : db`TRUE`}
+      )
     ORDER BY u.created_at DESC
     LIMIT 50
   `;
   return users;
+}
+
+export async function updateProfile(
+  username: string,
+  fields: { display_name?: string; bio?: string; profile_image?: string },
+) {
+  const [updated] = await db<{ username: string; display_name: string | null; bio: string | null; profile_image: string | null }[]>`
+    UPDATE users SET
+      display_name = COALESCE(${fields.display_name ?? null}, display_name),
+      bio = COALESCE(${fields.bio ?? null}, bio),
+      profile_image = COALESCE(${fields.profile_image ?? null}, profile_image),
+      updated_at = ${new Date().toISOString()}
+    WHERE username = ${username}
+    RETURNING username, display_name, bio, profile_image
+  `;
+  return updated;
 }

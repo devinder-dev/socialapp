@@ -18,30 +18,42 @@ export async function insertOne(
   return created;
 }
 
-// TODO: Add pagination. Currently this will only return the first 25 posts only.
-export async function getFeedForUser(username: string): Promise<FeedRow[]> {
-  // Hämta inlägg från användare som den aktuella användaren följer.
-  const feed = await db`WITH my_user_id AS (SELECT id
-                    FROM users
-                    WHERE username = ${username})
-SELECT p.id,
-       p.image,
-       p.caption,
-       p.created_at,
-       u.username,
-       u.profile_image,
-       u.display_name AS user_display_name
-FROM posts AS p
-         LEFT JOIN users AS u ON p.user_id = u.id
-WHERE p.status = 'active'
-  AND (
-    p.user_id = (SELECT id FROM my_user_id)
-        OR p.user_id IN (SELECT followed_user_id
-                         FROM follower_relationships
-                         WHERE following_user_id = (SELECT id FROM my_user_id))
-    )
-ORDER BY p.created_at DESC
-LIMIT 25`;
+export async function deleteOne(postId: number, username: string): Promise<boolean> {
+  const result = await db`
+    UPDATE posts SET status = 'deleted'
+    WHERE id = ${postId}
+    AND user_id = (SELECT id FROM users WHERE username = ${username})
+    AND status = 'active'
+  `;
+  return result.count > 0;
+}
+
+export async function getFeedForUser(username: string, page: number = 1): Promise<FeedRow[]> {
+  const limit = 25;
+  const offset = (page - 1) * limit;
+
+  const feed = await db`
+    WITH my_user_id AS (SELECT id FROM users WHERE username = ${username})
+    SELECT p.id,
+           p.image,
+           p.caption,
+           p.created_at,
+           u.username,
+           u.profile_image,
+           u.display_name AS user_display_name
+    FROM posts AS p
+    LEFT JOIN users AS u ON p.user_id = u.id
+    WHERE p.status = 'active'
+      AND (
+        p.user_id = (SELECT id FROM my_user_id)
+        OR p.user_id IN (
+          SELECT followed_user_id FROM follower_relationships
+          WHERE following_user_id = (SELECT id FROM my_user_id)
+        )
+      )
+    ORDER BY p.created_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
 
   return feed;
 }

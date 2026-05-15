@@ -1,5 +1,6 @@
 import fastify from "fastify";
 import fastifyCors from "@fastify/cors";
+import fastifyRateLimit from "@fastify/rate-limit";
 import banner from "./banner";
 import userRoutes from "./routes/userRoutes";
 import auth from "./auth";
@@ -29,6 +30,12 @@ httpServer.setErrorHandler((err: any, req, rep) => {
 
 async function start() {
   await httpServer.register(fastifyCors, { origin: true });
+
+  await httpServer.register(fastifyRateLimit, {
+    global: true,
+    max: 100,
+    timeWindow: "1 minute",
+  });
 
   await httpServer.register(auth);
 

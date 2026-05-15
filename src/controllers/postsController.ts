@@ -5,12 +5,28 @@ import type { TokenPayload } from "../types/auth";
 import uploadImageToS3 from "../adapters/s3";
 
 export async function getFeed(
-  request: FastifyRequest,
+  request: FastifyRequest<{ Querystring: { page?: string } }>,
   reply: FastifyReply,
 ) {
   const { username } = request.user as TokenPayload;
-  const posts = await repository.posts.getFeedForUser(username);
+  const page = Math.max(1, Number(request.query.page) || 1);
+  const posts = await repository.posts.getFeedForUser(username, page);
   return reply.status(200).send(posts);
+}
+
+export async function deletePost(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+) {
+  const { username } = request.user as TokenPayload;
+  const postId = Number(request.params.id);
+
+  if (isNaN(postId)) return reply.status(400).send({ message: "Invalid post id" });
+
+  const deleted = await repository.posts.deleteOne(postId, username);
+  if (!deleted) return reply.status(403).send({ message: "Post not found or not yours" });
+
+  return reply.status(200).send({ message: "Post deleted" });
 }
 
 export async function createPost(

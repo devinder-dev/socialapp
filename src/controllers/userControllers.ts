@@ -90,12 +90,46 @@ export async function toggleFollow(
 }
 
 export async function getUsers(
+  request: FastifyRequest<{ Querystring: { search?: string } }>,
+  reply: FastifyReply,
+) {
+  const { username } = request.user;
+  const users = await repository.users.getAllExcept(username, request.query.search);
+  return reply.status(200).send(users);
+}
+
+export async function editProfile(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
   const { username } = request.user;
-  const users = await repository.users.getAllExcept(username);
-  return reply.status(200).send(users);
+
+  let display_name: string | undefined;
+  let bio: string | undefined;
+  let profile_image: string | undefined;
+
+  const contentType = request.headers["content-type"] ?? "";
+
+  if (contentType.includes("multipart")) {
+    const multipartData = await request.file();
+    if (multipartData) {
+      const buffer = await multipartData.toBuffer();
+      const { default: uploadImageToS3 } = await import("../adapters/s3");
+      profile_image = await uploadImageToS3(buffer, multipartData.filename, multipartData.mimetype) ?? undefined;
+      const fields = multipartData.fields;
+      const dn = fields?.display_name;
+      const b = fields?.bio;
+      if (dn && !Array.isArray(dn) && "value" in dn) display_name = dn.value as string;
+      if (b && !Array.isArray(b) && "value" in b) bio = b.value as string;
+    }
+  } else {
+    const body = request.body as { display_name?: string; bio?: string };
+    display_name = body?.display_name;
+    bio = body?.bio;
+  }
+
+  const updated = await repository.users.updateProfile(username, { display_name, bio, profile_image });
+  return reply.status(200).send(updated);
 }
 
 export async function login(

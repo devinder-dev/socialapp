@@ -23,6 +23,7 @@ export async function userRoutes(
     url: "/register",
     handler: userControllers.register,
     schema: registerSchema,
+    config: { rateLimit: { max: 10, timeWindow: "10 minutes" } },
   });
 
   httpServer.route({
@@ -30,6 +31,7 @@ export async function userRoutes(
     url: "/login",
     handler: userControllers.login,
     schema: loginSchema,
+    config: { rateLimit: { max: 10, timeWindow: "10 minutes" } },
   });
 
   httpServer.route({
@@ -43,6 +45,13 @@ export async function userRoutes(
     method: "GET",
     url: "/users",
     handler: userControllers.getUsers,
+    preHandler: [authenticate],
+  });
+
+  httpServer.route({
+    method: "PATCH",
+    url: "/profile",
+    handler: userControllers.editProfile,
     preHandler: [authenticate],
   });
 }

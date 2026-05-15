@@ -437,6 +437,96 @@ body {
   text-align: center;
 }
 
+/* ── Post actions (likes + comments toggle) ─────────────────── */
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--bg);
+}
+
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 4px 0;
+  transition: transform 0.1s;
+}
+.like-btn:hover { transform: scale(1.15); }
+.like-btn.liked { color: var(--red); }
+
+.comment-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-light);
+  padding: 4px 0;
+}
+.comment-toggle-btn:hover { color: var(--text); }
+
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 6px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.delete-btn:hover { opacity: 1; }
+
+/* ── Comments ────────────────────────────────────────────────── */
+.comment-section {
+  padding: 8px 16px 12px;
+  border-top: 1px solid var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comment {
+  font-size: 13px;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.comment-username { font-weight: 700; }
+.comment-text { flex: 1; }
+.comment-time { font-size: 11px; color: var(--text-lighter); white-space: nowrap; }
+
+.comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.comment-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+.comment-input:focus { border-color: var(--blue); }
+.comment-submit {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.comment-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .main-layout { grid-template-columns: 1fr; }

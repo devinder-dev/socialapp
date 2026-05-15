@@ -43,3 +43,14 @@ export type AuthResponse = {
   token: string;
   user: User;
 };
+
+export type EditProfileRequest = {
+  display_name?: string;
+  bio?: string;
+  profile_image?: string;
+};
+
+export type AddCommentRequest = {
+  text: string;
+  parent_comment_id?: number;
+};
